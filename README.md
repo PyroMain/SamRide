@@ -1,6 +1,6 @@
 # SamRide
 
-![SamRide Logo](https://i.ibb.co/Kb7QNSH/image.webp) <!-- Remplacer par l'URL de votre logo -->
+![SamRide Logo](https://i.ibb.co/XZdrhSs/image-2.png) <!-- Remplacer par l'URL de votre logo -->
 
 SamRide est une application mobile intuitive et fiable qui permet aux utilisateurs de réserver un conducteur sobre (Sam) pour rentrer chez eux en toute sécurité après des soirées. Le projet vise à prévenir la conduite en état d’ébriété et à améliorer la sécurité sur les routes.
 
