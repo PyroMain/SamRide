@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.example.samride.ui.theme.SamRideTheme
 import com.example.samride.ui.HomeScreen
 import com.example.samride.ui.LoginScreen
 import com.example.samride.ui.RegisterScreen
@@ -15,7 +16,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AppNavigator()
+            SamRideTheme {
+                AppNavigator()
+            }
         }
     }
 }
