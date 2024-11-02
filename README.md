@@ -31,3 +31,25 @@ SamRide est une application mobile intuitive et fiable qui permet aux utilisateu
 - **Android Studio** installé ([Télécharger ici](https://developer.android.com/studio))
 - **Compte Firebase** pour l'authentification (optionnel)
 - **Clé API Google Maps** pour la géolocalisation
+
+# Configuration de Firebase pour l'Authentification et la Base de Données Firestore
+
+## 1. Création du Projet Firebase
+
+1. Accédez à la [console Firebase](https://console.firebase.google.com/).
+2. Cliquez sur **Ajouter un projet** ou sélectionnez un projet existant.
+3. Suivez les étapes pour créer votre projet :
+    - Entrez le nom du projet : `SamRide`
+    - Acceptez les conditions et activez les fonctionnalités supplémentaires si nécessaire.
+4. Une fois le projet créé, cliquez sur **Continuer** pour accéder au tableau de bord du projet.
+
+---
+
+## 2. Ajouter Firebase à l'application
+
+1. Dans la console Firebase, sélectionnez votre projet, puis cliquez sur **Ajouter une application** et choisissez **Android**.
+2. Entrez le nom du package de votre application (disponible dans votre fichier `AndroidManifest.xml`).
+3. (Optionnel) Entrez un surnom d’application et un certificat de débogage SHA-1.
+4. Cliquez sur **Enregistrer l'application**.
+5. Téléchargez le fichier `google-services.json` fourni par Firebase.
+6. Placez ce fichier dans le dossier `app` de votre projet Android.
