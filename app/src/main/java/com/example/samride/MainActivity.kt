@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.example.samride.ui.BookSamScreen
 import com.example.samride.ui.theme.SamRideTheme
 import com.example.samride.ui.HomeScreen
 import com.example.samride.ui.LoginScreen
@@ -32,9 +33,11 @@ fun MyApp() {
 fun AppNavigator() {
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = "home") {
+    NavHost(navController, startDestination = "bookSam") { //old -> home
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
         composable("home") { HomeScreen(navController) }
+        composable("bookSam") { BookSamScreen(navController) }
+
     }
 }
