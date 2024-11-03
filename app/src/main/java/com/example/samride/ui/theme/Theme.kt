@@ -18,14 +18,20 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
         primary = DarkBlue,
         secondary = LightGreen,
-        tertiary = LightGrey
+        tertiary = LightGrey,
+        background = DarkBlue,
+        surface = LightGrey,
+        onPrimary = LightGrey,
+        onSecondary = DarkBlue,
+        onTertiary = LightGreen,
+        onBackground = LightGrey,
+        onSurface = DarkBlue
 )
 
 private val LightColorScheme = lightColorScheme(
         primary = DarkBlue,
         secondary = LightGreen,
         tertiary = LightGrey,
-
         background = DarkBlue,
         surface = LightGrey,
         onPrimary = LightGrey,
@@ -38,7 +44,6 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun SamRideTheme(
         darkTheme: Boolean = isSystemInDarkTheme(),
-        // Dynamic color is available on Android 12+
         dynamicColor: Boolean = true,
         content: @Composable () -> Unit
 ) {
@@ -61,8 +66,8 @@ fun SamRideTheme(
     }
 
     MaterialTheme(
-            colorScheme = colorScheme,
-            typography = Typography,
-            content = content
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
     )
 }

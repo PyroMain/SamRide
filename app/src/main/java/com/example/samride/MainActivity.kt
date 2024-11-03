@@ -16,10 +16,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SamRideTheme {
-                AppNavigator()
-            }
+            MyApp()
         }
+    }
+}
+
+@Composable
+fun MyApp() {
+    SamRideTheme {
+        AppNavigator()
     }
 }
 
