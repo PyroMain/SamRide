@@ -18,15 +18,30 @@ import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.rememberCameraPositionState
+
+data class Location(var latitude: Double, var longitude: Double)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSamScreen(navController: NavController) {
-    var destination by remember { mutableStateOf("") }
-    var depart by remember { mutableStateOf("") }
+    var locationDestination by remember { mutableStateOf(Location(0.0, 0.0)) }
+    var locationDepart by remember { mutableStateOf(Location(0.0, 0.0)) }
+    var locationDestinationText by remember { mutableStateOf("") }
+    var locationDepartText by remember { mutableStateOf("") }
     var locationText by remember { mutableStateOf("En attente de localisation...") }
 
     val context = LocalContext.current
+
+    // Position de la caméra pour la carte
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            com.google.android.gms.maps.model.LatLng(48.8566, 2.3522), // Paris comme position par défaut
+            10f
+        )
+    }
 
     // Lanceur pour la demande de permission
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -34,8 +49,14 @@ fun BookSamScreen(navController: NavController) {
     ) { isGranted ->
         if (isGranted) {
             getUserLocation(context) { latitude, longitude ->
-                depart = "Latitude: $latitude, Longitude: $longitude"
-                locationText = "Coordonnées récupérées"
+                locationDepart.latitude = latitude
+                locationDepart.longitude = longitude
+                locationText = "Coordonnées récupérées : latitude: ${locationDepart.latitude} longitude: ${locationDepart.longitude}"
+                // Met à jour la position de la caméra
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                    com.google.android.gms.maps.model.LatLng(latitude, longitude),
+                    10f // Zoom level
+                )
             }
         } else {
             locationText = "Permission refusée"
@@ -46,35 +67,49 @@ fun BookSamScreen(navController: NavController) {
     LaunchedEffect(Unit) {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             getUserLocation(context) { latitude, longitude ->
-                depart = "Latitude: $latitude, Longitude: $longitude"
-                locationText = "Coordonnées récupérées"
+                locationDepart.latitude = latitude
+                locationDepart.longitude = longitude
+                locationText = "Coordonnées récupérées : latitude: ${locationDepart.latitude} longitude: ${locationDepart.longitude}"
+                // Met à jour la position de la caméra
+                cameraPositionState.position = CameraPosition.fromLatLngZoom(
+                    com.google.android.gms.maps.model.LatLng(latitude, longitude),
+                    10f // Zoom level
+                )
             }
         } else {
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
-    ) {
-        Column(
+    // Mise en page de l'écran avec la carte en arrière-plan
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Carte en arrière-plan
+        GoogleMap(
             modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
+        )
+
+        // Contenu au premier plan
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             TextField(
-                value = destination,
-                onValueChange = { destination = it },
+                value = locationDepartText,
+                onValueChange = { locationDepartText = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Destination") }
+                placeholder = { Text("Ma position") }
             )
             Spacer(modifier = Modifier.height(16.dp))
             TextField(
-                value = depart,
-                onValueChange = { depart = it },
+                value = locationDestinationText,
+                onValueChange = { locationDestinationText = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Départ") }
+                placeholder = { Text("Où allons nous ?") }
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(locationText)
@@ -86,8 +121,8 @@ fun BookSamScreen(navController: NavController) {
                 // Action à exécuter lorsque le bouton est cliqué
             },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
+                .align(Alignment.BottomStart)
+                .padding(30.dp),
             containerColor = Color.Cyan // Couleur de fond du bouton
         ) {
             Text(text = "Sam !")
@@ -103,7 +138,7 @@ fun getUserLocation(context: Context, onLocationResult: (Double, Double) -> Unit
         if (location != null) {
             onLocationResult(location.latitude, location.longitude)
         } else {
-            onLocationResult(0.0, 0.0) // Valeurs par défaut si aucune localisation n'est trouvée
+            onLocationResult(6.6, 6.6) // Valeurs par défaut si aucune localisation n'est trouvée
         }
     }
 }

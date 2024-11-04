@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -49,6 +50,8 @@ android {
 
 dependencies {
 
+    implementation("com.google.maps.android:maps-compose:2.11.1")
+    implementation("com.google.android.gms:play-services-maps:18.0.2")
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.0")
