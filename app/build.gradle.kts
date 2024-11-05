@@ -10,6 +10,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
+        buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${project.findProperty("GOOGLE_MAPS_API_KEY") ?: ""}\"")
         applicationId = "com.example.samride"
         minSdk = 24
         targetSdk = 34
@@ -36,6 +37,7 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
     composeOptions {
@@ -50,6 +52,7 @@ android {
 
 dependencies {
 
+    implementation("com.google.android.libraries.places:places:2.5.0")
     implementation("com.google.maps.android:maps-compose:2.11.1")
     implementation("com.google.android.gms:play-services-maps:18.0.2")
     implementation("androidx.core:core-ktx:1.10.1")

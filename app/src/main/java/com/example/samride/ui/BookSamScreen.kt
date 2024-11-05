@@ -6,7 +6,12 @@ import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,8 +24,19 @@ import androidx.navigation.NavController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken
+import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.style.TextOverflow
 
 data class Location(var latitude: Double, var longitude: Double)
 
@@ -32,18 +48,42 @@ fun BookSamScreen(navController: NavController) {
     var locationDestinationText by remember { mutableStateOf("") }
     var locationDepartText by remember { mutableStateOf("") }
     var locationText by remember { mutableStateOf("En attente de localisation...") }
+    var predictions by remember { mutableStateOf<List<String>>(emptyList()) }
+    var isTypingInDepartField by remember { mutableStateOf(false) }
+    var isTypingInDestinationField by remember { mutableStateOf(false) }
+    // Animation de décalage pour chaque TextField
+    val offsetYDestination by animateDpAsState(if (isTypingInDestinationField) -16.dp else 0.dp)
+
 
     val context = LocalContext.current
+    val placesClient: PlacesClient = Places.createClient(context)
+    val token = AutocompleteSessionToken.newInstance()
 
-    // Position de la caméra pour la carte
+
+    // Fonction pour chercher des prédictions d'adresses
+    fun fetchPlacePredictions(query: String) {
+        val request = FindAutocompletePredictionsRequest.builder()
+            .setTypeFilter(TypeFilter.ADDRESS)
+            .setSessionToken(token)
+            .setQuery(query)
+            .build()
+
+        placesClient.findAutocompletePredictions(request)
+            .addOnSuccessListener { response ->
+                predictions = response.autocompletePredictions.map { it.getFullText(null).toString() }
+            }
+            .addOnFailureListener { exception ->
+                predictions = listOf("Erreur : ${exception.message}")
+            }
+    }
+
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
-            com.google.android.gms.maps.model.LatLng(48.8566, 2.3522), // Paris comme position par défaut
+            LatLng(48.8566, 2.3522),
             10f
         )
     }
 
-    // Lanceur pour la demande de permission
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -52,10 +92,8 @@ fun BookSamScreen(navController: NavController) {
                 locationDepart.latitude = latitude
                 locationDepart.longitude = longitude
                 locationText = "Coordonnées récupérées : latitude: ${locationDepart.latitude} longitude: ${locationDepart.longitude}"
-                // Met à jour la position de la caméra
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(
-                    com.google.android.gms.maps.model.LatLng(latitude, longitude),
-                    10f // Zoom level
+                    LatLng(latitude, longitude), 15f
                 )
             }
         } else {
@@ -63,17 +101,14 @@ fun BookSamScreen(navController: NavController) {
         }
     }
 
-    // Vérifier et demander la permission
     LaunchedEffect(Unit) {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             getUserLocation(context) { latitude, longitude ->
                 locationDepart.latitude = latitude
                 locationDepart.longitude = longitude
                 locationText = "Coordonnées récupérées : latitude: ${locationDepart.latitude} longitude: ${locationDepart.longitude}"
-                // Met à jour la position de la caméra
                 cameraPositionState.position = CameraPosition.fromLatLngZoom(
-                    com.google.android.gms.maps.model.LatLng(latitude, longitude),
-                    10f // Zoom level
+                    LatLng(latitude, longitude), 15f
                 )
             }
         } else {
@@ -81,49 +116,129 @@ fun BookSamScreen(navController: NavController) {
         }
     }
 
-    // Mise en page de l'écran avec la carte en arrière-plan
     Box(modifier = Modifier.fillMaxSize()) {
         // Carte en arrière-plan
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState
-        )
+        ) {
+            if (locationDepart.latitude != 0.0 && locationDepart.longitude != 0.0) {
+                Marker(
+                    state = com.google.maps.android.compose.MarkerState(
+                        position = LatLng(locationDepart.latitude, locationDepart.longitude)
+                    ),
+                    title = "Moi"
+                )
+            }
+        }
 
-        // Contenu au premier plan
+        // Superposition grise si l'utilisateur tape dans le premier champ
+        if (isTypingInDepartField or isTypingInDestinationField) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0x88000000)) // Couleur grise semi-transparente
+                    .clickable {
+                        isTypingInDepartField = false
+                        isTypingInDestinationField = false
+                    } // Permet de désactiver en cliquant en dehors
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextField(
-                value = locationDepartText,
-                onValueChange = { locationDepartText = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                placeholder = { Text("Ma position") }
-            )
+            // Masquer le premier TextField si on tape dans le deuxième
+            if (!isTypingInDestinationField){
+                TextField(
+                    value = locationDepartText,
+                    onValueChange = {
+                        locationDepartText = it
+                        fetchPlacePredictions(it)
+                        isTypingInDepartField = true
+                        isTypingInDestinationField = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusChanged { focusState ->
+                            isTypingInDepartField = focusState.isFocused
+                            if (focusState.isFocused) isTypingInDestinationField = false
+                        },
+                    singleLine = true,
+                    placeholder = { Text("Ma position") }
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
-            TextField(
-                value = locationDestinationText,
-                onValueChange = { locationDestinationText = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                placeholder = { Text("Où allons nous ?") }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+
+            // Masquer le deuxième TextField si on tape dans le premier
+            if (!isTypingInDepartField) {
+                TextField(
+                    value = locationDestinationText,
+                    onValueChange = {
+                        locationDestinationText = it
+                        fetchPlacePredictions(it)
+                        isTypingInDestinationField = true
+                        isTypingInDepartField = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset(y = offsetYDestination) // Utilisation de l'offset pour animer la position
+                        .onFocusChanged { focusState ->
+                            isTypingInDestinationField = focusState.isFocused
+                            if (focusState.isFocused) isTypingInDepartField = false
+                        },
+                    singleLine = true,
+                    placeholder = { Text("Où allons nous ?") }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Afficher les prédictions de lieu
+            if (predictions.isNotEmpty()) {
+                LazyColumn {
+                    items(predictions) { prediction ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 1.dp) // Espace vertical entre les éléments
+                                .clickable {
+                                    if (isTypingInDepartField) {
+                                        locationDepartText = prediction
+                                    } else if (isTypingInDestinationField) {
+                                        locationDestinationText = prediction
+                                    }
+                                    isTypingInDepartField = false // Désactive le mode édition
+                                    isTypingInDestinationField = false
+                                    predictions = emptyList() // Cache les prédictions après sélection
+                                },
+                            shape = RoundedCornerShape(8.dp), // Coins arrondis
+                            border = BorderStroke(1.dp, Color.LightGray) // Bordure légère
+                        ) {
+                            // Contenu de la carte
+                            Text(
+                                text = prediction,
+                                modifier = Modifier.padding(16.dp), // Padding interne de la carte
+                                style = MaterialTheme.typography.bodyLarge, // Style de texte
+                                overflow = TextOverflow.Ellipsis, // Texte qui dépasse est coupé
+                                maxLines = 1 // Limite le texte à une ligne
+                            )
+                        }
+                    }
+                }
+            }
             Text(locationText)
         }
 
-        // Bouton flottant en bas à droite
+        // Bouton flottant
         FloatingActionButton(
-            onClick = {
-                // Action à exécuter lorsque le bouton est cliqué
-            },
+            onClick = { /* Action au clic */ },
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(30.dp),
-            containerColor = Color.Cyan // Couleur de fond du bouton
+            containerColor = Color.Cyan
         ) {
             Text(text = "Sam !")
         }
