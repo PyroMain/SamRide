@@ -52,6 +52,7 @@ android {
 
 dependencies {
 
+    implementation("com.google.maps.android:maps-utils-ktx:3.4.0")
     implementation("com.google.android.libraries.places:places:2.5.0")
     implementation("com.google.maps.android:maps-compose:2.11.1")
     implementation("com.google.android.gms:play-services-maps:18.0.2")
