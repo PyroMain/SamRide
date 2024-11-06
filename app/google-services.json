@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "208751278170",
+    "project_id": "samride-eced1",
+    "storage_bucket": "samride-eced1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:208751278170:android:0653022287a1efff7a8063",
+        "android_client_info": {
+          "package_name": "com.example.samride"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmKmqqDM7q6qox8jjDb5Iv_wWGj4gRMfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
