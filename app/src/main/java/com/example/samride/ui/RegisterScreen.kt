@@ -1,14 +1,10 @@
 package com.example.samride.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
@@ -18,6 +14,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.samride.auth.FirebaseAuthHelper
+import com.example.samride.components.Logo
+import com.example.samride.components.ReturnButton
+import com.example.samride.services.RegisterService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,6 +29,8 @@ fun RegisterScreen(navController: NavController) {
     var confirmPassword by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf("user") } // Rôle par défaut : utilisateur simple
 
+    val registerService = RegisterService()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -37,19 +38,12 @@ fun RegisterScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
-            }
-        }
+        ReturnButton(navController)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Logo()
+        Spacer(modifier = Modifier.height(48.dp))
 
         Text("Inscription", style = MaterialTheme.typography.headlineSmall)
-
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
@@ -58,7 +52,6 @@ fun RegisterScreen(navController: NavController) {
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -68,7 +61,6 @@ fun RegisterScreen(navController: NavController) {
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -78,35 +70,28 @@ fun RegisterScreen(navController: NavController) {
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Sélectionnez votre rôle")
-        Row {
-            RadioButton(
-                selected = selectedRole == "user",
-                onClick = { selectedRole = "user" }
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Allez vous être un Sam ?", style = MaterialTheme.typography.bodyMedium)
+            Checkbox(
+                checked = selectedRole == "sam",
+                onCheckedChange = {
+                    selectedRole = if (it) "sam" else "user"
+                },
             )
-            Text("Utilisateur")
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            RadioButton(
-                selected = selectedRole == "sam",
-                onClick = { selectedRole = "sam" }
-            )
-            Text("Sam")
         }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            if (isValidEmail(email)) {
+            if (registerService.isValidEmail(email)) {
                 CoroutineScope(Dispatchers.IO).launch {
                     val user = FirebaseAuthHelper.registerUser(email, password, selectedRole)
                     withContext(Dispatchers.Main) {
                         if (user != null) {
-                            navController.navigate("home")
+                            navController.navigate("bookSam")
                         } else {
                             print("Échec de l'inscription. Vérifiez vos informations.")
                         }
@@ -118,15 +103,10 @@ fun RegisterScreen(navController: NavController) {
         }) {
             Text("S'inscrire")
         }
-
         Spacer(modifier = Modifier.height(8.dp))
 
         TextButton(onClick = { navController.navigate("login") }) {
             Text("Déjà un compte ? Connectez-vous")
         }
     }
-}
-
-fun isValidEmail(email: String): Boolean {
-    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
 }
