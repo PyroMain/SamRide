@@ -9,7 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.example.samride.ui.BookSamScreen
 import com.example.samride.ui.theme.SamRideTheme
-import com.example.samride.ui.HomeScreen
+import com.example.samride.ui.MenuScreen
 import com.example.samride.ui.LoginScreen
 import com.example.samride.ui.RegisterScreen
 import com.google.android.libraries.places.api.Places
@@ -17,11 +17,9 @@ import com.google.android.libraries.places.api.Places
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Initialize the SDK with the Google Maps Platform API key
+        Places.initialize(this, BuildConfig.GOOGLE_MAPS_API_KEY)
 
-        // Vérifiez que l'API Google Places est initialisée
-        if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, BuildConfig.GOOGLE_MAPS_API_KEY)
-        }
         setContent {
             MyApp()
         }
@@ -39,10 +37,10 @@ fun MyApp() {
 fun AppNavigator() {
     val navController = rememberNavController()
 
-    NavHost(navController, startDestination = "bookSam") { //put login
+    NavHost(navController, startDestination = "login") {
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
         composable("bookSam") { BookSamScreen(navController) }
-
+        composable("home") { MenuScreen(navController) }
     }
 }

@@ -1,11 +1,7 @@
 package com.example.samride.ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -17,6 +13,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.samride.auth.FirebaseAuthHelper
+import com.example.samride.components.Logo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +25,12 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
 
+    LaunchedEffect(Unit) {
+        FirebaseAuthHelper.getCurrentUser()?.let {
+            navController.navigate("bookSam")
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,19 +38,11 @@ fun LoginScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
-            }
-        }
+        Logo()
+        Spacer(modifier = Modifier.height(32.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
 
         Text("Connexion", style = MaterialTheme.typography.headlineSmall)
-
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
@@ -56,7 +51,6 @@ fun LoginScreen(navController: NavController) {
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -66,7 +60,6 @@ fun LoginScreen(navController: NavController) {
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
@@ -74,7 +67,7 @@ fun LoginScreen(navController: NavController) {
                 val user = FirebaseAuthHelper.loginUser(email, password)
                 withContext(Dispatchers.Main) {
                     if (user != null) {
-                        navController.navigate("home")
+                        navController.navigate("bookSam")
                     } else {
                         errorMessage = "Échec de la connexion. Vérifiez vos informations."
                     }
@@ -83,7 +76,6 @@ fun LoginScreen(navController: NavController) {
         }) {
             Text("Se connecter")
         }
-
         Spacer(modifier = Modifier.height(8.dp))
 
         if (errorMessage.isNotEmpty()) {
