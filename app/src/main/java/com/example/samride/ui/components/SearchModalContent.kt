@@ -1,4 +1,4 @@
-package com.example.samride.components
+package com.example.samride.ui.components
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
@@ -16,12 +16,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.samride.services.PlacesService
-import com.google.android.libraries.places.api.Places
+import com.example.samride.viewModel.PlacesViewModel
 import com.google.android.libraries.places.api.model.AutocompletePrediction
-import com.google.android.libraries.places.api.net.PlacesClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,12 +26,12 @@ import kotlinx.coroutines.withContext
 @SuppressLint("RememberReturnType")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun searchModalContent(sheetState: BottomSheetScaffoldState): @Composable() (ColumnScope.() -> Unit) {
+fun searchModalContent(
+    sheetState: BottomSheetScaffoldState,
+    viewModel: PlacesViewModel): @Composable() (ColumnScope.() -> Unit) {
     val coroutinesScope = rememberCoroutineScope()
-    val placesClient: PlacesClient = Places.createClient(LocalContext.current)
-    val placesService = PlacesService()
+    val query by viewModel.query.collectAsState()
 
-    var searchQuery by remember { mutableStateOf("") }
     var predictions by remember { mutableStateOf(emptyList<AutocompletePrediction>()) }
 
     Column(
@@ -51,12 +48,12 @@ fun searchModalContent(sheetState: BottomSheetScaffoldState): @Composable() (Col
                         }
                     }
                 },
-            value = searchQuery,
+            value = query,
             onValueChange = { query ->
-                searchQuery = query
+                viewModel.onQueryChanged(query)
                 coroutinesScope.launch {
                     predictions = withContext(Dispatchers.IO) {
-                        placesService.getPredictions(query, placesClient)
+                        viewModel.getPlaces()
                     }
                 }
             },

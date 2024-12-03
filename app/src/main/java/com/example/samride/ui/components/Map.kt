@@ -1,4 +1,4 @@
-package com.example.samride.components
+package com.example.samride.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

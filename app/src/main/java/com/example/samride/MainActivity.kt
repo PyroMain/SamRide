@@ -11,7 +11,13 @@ import com.example.samride.ui.BookSamScreen
 import com.example.samride.ui.theme.SamRideTheme
 import com.example.samride.ui.MenuScreen
 import com.example.samride.ui.LoginScreen
+import com.example.samride.ui.ProfileScreen
 import com.example.samride.ui.RegisterScreen
+import com.example.samride.viewModel.LocationViewModel
+import com.example.samride.viewModel.LoginViewModel
+import com.example.samride.viewModel.MenuViewModel
+import com.example.samride.viewModel.ProfileViewModel
+import com.example.samride.viewModel.RegisterViewModel
 import com.google.android.libraries.places.api.Places
 
 class MainActivity : ComponentActivity() {
@@ -38,9 +44,10 @@ fun AppNavigator() {
     val navController = rememberNavController()
 
     NavHost(navController, startDestination = "login") {
-        composable("login") { LoginScreen(navController) }
-        composable("register") { RegisterScreen(navController) }
-        composable("bookSam") { BookSamScreen(navController) }
-        composable("home") { MenuScreen(navController) }
+        composable("login") { LoginScreen(navController, LoginViewModel()) }
+        composable("register") { RegisterScreen(navController, RegisterViewModel()) }
+        composable("bookSam") { BookSamScreen(navController, LocationViewModel()) }
+        composable("home") { MenuScreen(navController, MenuViewModel()) }
+        composable("profile") { ProfileScreen(navController, ProfileViewModel()) }
     }
 }

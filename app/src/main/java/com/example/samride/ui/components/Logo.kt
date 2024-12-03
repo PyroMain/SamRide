@@ -1,4 +1,4 @@
-package com.example.samride.components
+package com.example.samride.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size

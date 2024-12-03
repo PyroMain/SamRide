@@ -1,29 +1,34 @@
-package com.example.samride.services;
+package com.example.samride.services
 
-import com.google.android.libraries.places.api.model.AutocompletePrediction;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;;
-import com.google.android.libraries.places.api.net.PlacesClient;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import com.google.android.libraries.places.api.model.AutocompletePrediction
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse
+import com.google.android.libraries.places.api.net.PlacesClient
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 
-public class PlacesService {
-    public List<AutocompletePrediction> getPredictions(String query, PlacesClient placesClient) {
-        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
-                .setQuery(query)
-                .build();
-        CompletableFuture<List<AutocompletePrediction>> future = new CompletableFuture<>();
+class PlacesService {
+    fun getPredictions(query: String?, placesClient: PlacesClient): List<AutocompletePrediction> {
+        val request = FindAutocompletePredictionsRequest.builder()
+            .setQuery(query)
+            .build()
+        val future = CompletableFuture<List<AutocompletePrediction>>()
         placesClient
-                .findAutocompletePredictions(request)
-                .addOnSuccessListener(response -> {
-                    future.complete(response.getAutocompletePredictions());
-                })
-                .addOnFailureListener(future::completeExceptionally);
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            return Collections.emptyList();
+            .findAutocompletePredictions(request)
+            .addOnSuccessListener { response: FindAutocompletePredictionsResponse ->
+                future.complete(response.autocompletePredictions)
+            }
+            .addOnFailureListener { throwable: Exception? ->
+                future.completeExceptionally(
+                    throwable
+                )
+            }
+        return try {
+            future.get()
+        } catch (e: InterruptedException) {
+            emptyList()
+        } catch (e: ExecutionException) {
+            emptyList()
         }
     }
 }

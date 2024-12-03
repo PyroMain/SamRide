@@ -12,23 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.samride.auth.FirebaseAuthHelper
-import com.example.samride.components.Logo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.samride.ui.components.Logo
+import com.example.samride.viewModel.LoginViewModel
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
+fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
+    val email by viewModel.email.collectAsState()
+    val password by viewModel.password.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
-    LaunchedEffect(Unit) {
-        FirebaseAuthHelper.getCurrentUser()?.let {
-            navController.navigate("bookSam")
-        }
+    if (viewModel.isLogged()) {
+        navController.navigate("bookSam")
     }
 
     Column(
@@ -47,7 +41,7 @@ fun LoginScreen(navController: NavController) {
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = { viewModel.onEmailChanged(it) },
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
@@ -55,7 +49,7 @@ fun LoginScreen(navController: NavController) {
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = { viewModel.onPasswordChanged(it) },
             label = { Text("Mot de passe") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
@@ -63,27 +57,18 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            CoroutineScope(Dispatchers.IO).launch {
-                val user = FirebaseAuthHelper.loginUser(email, password)
-                withContext(Dispatchers.Main) {
-                    if (user != null) {
-                        navController.navigate("bookSam")
-                    } else {
-                        errorMessage = "Échec de la connexion. Vérifiez vos informations."
-                    }
-                }
-            }
+            viewModel.login(navController)
         }) {
             Text("Se connecter")
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (errorMessage.isNotEmpty()) {
-            Text(errorMessage, color = MaterialTheme.colorScheme.error)
+        if (errorMessage?.isNotEmpty() == true) {
+            Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        TextButton(onClick = { FirebaseAuthHelper.resetPassword(email) }) {
+        TextButton(onClick = { }) {
             Text("Mot de passe oublié ?")
         }
 

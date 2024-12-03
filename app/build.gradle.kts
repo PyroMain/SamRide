@@ -50,6 +50,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.ui:ui-test-android:1.7.5")
     val mapsComposeVersion = "4.4.1"
 
     implementation("androidx.core:core-ktx:1.15.0")
@@ -79,7 +80,7 @@ dependencies {
     implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
     // Google Maps Compose widgets library
     implementation("com.google.maps.android:maps-compose-widgets:$mapsComposeVersion")
-    implementation("com.google.android.libraries.places:places:4.0.0")
+    implementation("com.google.android.libraries.places:places:4.1.0")
     // Places SDK for Android KTX Library
     implementation("com.google.maps.android:places-ktx:2.0.0")
 
